@@ -18,7 +18,7 @@ def load_model():
 def load_labels():
     url = "https://raw.githubusercontent.com/pytorch/hub/master/imagenet_classes.txt"
     response = requests.get(url)
-    return [line.strip() for line in BytesIO(response.content).readlines()]
+    return [line.strip().decode('utf-8') for line in BytesIO(response.content).readlines()]
 
 
 def main():
@@ -49,7 +49,7 @@ def main():
     if uploaded_file is not None:
         try:
             image = Image.open(uploaded_file).convert('RGB')
-            st.image(image, caption="Загруженное изображение", use_column_width=True)
+            st.image(image, caption="Загруженное изображение", use_container_width=True)
 
             # Обработка и предсказание
             image_tensor = preprocess(image).unsqueeze(0)
