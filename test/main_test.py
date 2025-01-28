@@ -5,7 +5,7 @@ from io import BytesIO
 import requests
 
 # Импортируем наши функции из app.py (меняйте названия файла и функций, если отличаются)
-from app import load_model, load_labels, get_preprocess_transform
+from main.main import load_model, load_labels, get_preprocess_transform
 
 
 def test_load_model():
