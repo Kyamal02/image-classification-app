@@ -6,7 +6,6 @@ import requests
 from io import BytesIO
 
 
-# Кэшируем загрузку модели и меток
 @st.cache_resource
 def load_model():
     model = models.mobilenet_v2(pretrained=True)
@@ -21,16 +20,8 @@ def load_labels():
     return [line.strip().decode('utf-8') for line in BytesIO(response.content).readlines()]
 
 
-def main():
-    st.title("Классификация изображений")
-    st.write("Загрузите изображение для классификации с помощью MobileNetV2")
-
-    # Загрузка модели и меток
-    model = load_model()
-    labels = load_labels()
-
-    # Препроцессинг
-    preprocess = transforms.Compose([
+def get_preprocess_transform():
+    return transforms.Compose([
         transforms.Resize(256),
         transforms.CenterCrop(224),
         transforms.ToTensor(),
@@ -40,7 +31,15 @@ def main():
         )
     ])
 
-    # Загрузка изображения
+
+def main():
+    st.title("Классификация изображений")
+    st.write("Загрузите изображение для классификации")
+
+    model = load_model()
+    labels = load_labels()
+    preprocess = get_preprocess_transform()
+
     uploaded_file = st.file_uploader(
         "Выберите изображение",
         type=["jpg", "jpeg", "png"]
@@ -51,16 +50,13 @@ def main():
             image = Image.open(uploaded_file).convert('RGB')
             st.image(image, caption="Загруженное изображение", use_container_width=True)
 
-            # Обработка и предсказание
             image_tensor = preprocess(image).unsqueeze(0)
-
             with torch.no_grad():
                 outputs = model(image_tensor)
 
             probabilities = torch.nn.functional.softmax(outputs[0], dim=0)
             top5_probs, top5_classes = torch.topk(probabilities, 5)
 
-            # Вывод результатов
             st.subheader("Топ-5 предсказаний:")
             for i in range(top5_probs.size(0)):
                 st.write(
